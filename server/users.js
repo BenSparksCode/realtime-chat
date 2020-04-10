@@ -10,8 +10,8 @@ const addUser = ({ id, name, room }) => {
     })
 
 
-    if(existingUser){
-        return {error: 'Username is taken'}
+    if (existingUser) {
+        return { error: 'Username is taken' }
     }
 
     const user = { id, name, room }
@@ -26,13 +26,13 @@ const removeUser = (id) => {
         user.id === id
     })
 
-    if(index !== -1){
+    if (index !== -1) {
         return users.splice(index, 1)[0]
     }
 }
 
 const getUser = (id) => {
-    return users.find( user => {
+    return users.find(user => {
         user.id === id
     })
 }
