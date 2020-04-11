@@ -2,6 +2,7 @@
 Realtime Chat App where users can join chatrooms and send/receive messages in those rooms.
  
 Frontend built with React, JavaScript, HTML, and CSS
+
 Backend built with Node, Express, and Socket.io
 
 Status: Work In Progress
