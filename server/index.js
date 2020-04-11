@@ -17,7 +17,7 @@ io.on('connection', (socket) => {
 
     //when a new user joins a room from the client
     socket.on('join', ({ name, room }, callback) => {
-        console.log(name, room);
+        console.log(`${name} joined room ${room}`);
 
         const { err, user } = addUser({ id: socket.id, name, room })
 
@@ -27,7 +27,7 @@ io.on('connection', (socket) => {
         
 
         //Send welcome message only to new user
-        socket.emit('message', { user: 'admin', text: `${user.name}, welcome to room ${user.room}.`});
+        socket.emit('message', { user: 'Admin', text: `${user.name}, welcome to room ${user.room}.`});
 
         //Admin announces the user joining to the whole chat
         socket.broadcast.to(user.room).emit('message', { user: 'Admin', text: `${user.name} has joined the room! :D` })
@@ -42,6 +42,8 @@ io.on('connection', (socket) => {
 
     //when server receives a sendMessage emit from the client
     socket.on('sendMessage', (message, callback) => {
+        console.log("SERVER - MESSAGE SENT");
+
         const user = getUser(socket.id)
 
         //publish message from user to user's room
@@ -53,12 +55,19 @@ io.on('connection', (socket) => {
  
     //when a connected user disconnects (closes client)
     socket.on('disconnect', () => {
-        console.log("User just left!");
-
+    
         const user = removeUser(socket.id)
-        
+
+        //Server logging
         if(user){
-            io.to(user.room).emit('message', { user: 'Admin', text: `he left` })
+            console.log(`${user.name} left room ${user.room}`);
+        } else {
+            console.log("User left a room");
+        }
+        
+        //Updating clients with 'user left' message and new users in room data
+        if(user){
+            io.to(user.room).emit('message', { user: 'Admin', text: `${user.name} left the room :'(` })
             io.to(user.room).emit('roomData', { room: user.room, users: getUsersInRoom(user.room) })
         }
     })
@@ -70,10 +79,5 @@ server.listen(PORT, () => {
     console.log(`Server has started on port ${PORT}`);
 })
 
-
-
 // TODO:
-
-// Exponential function calls per additional message sent???
-// No signing out message broadcasting
 // singing in as same person twice

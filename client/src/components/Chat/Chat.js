@@ -16,6 +16,8 @@ const Chat = ({ location }) => {
     const [room, setRoom] = useState('')
     const [message, setMessage] = useState('')
     const [messages, setMessages] = useState([])
+    const [users, setUsers] = useState('')
+
 
     const ENDPOINT = 'localhost:5000'
 
@@ -28,11 +30,15 @@ const Chat = ({ location }) => {
         setName(name)
         setRoom(room)
 
-        socket.emit('join', { name, room }, () => {
+        socket.emit('join', { name, room }, (err) => {
             //callback fn passed to server goes here
+            if(err){
+                alert(err.error)
+            }
         })
 
         return () => {
+            console.log("CLIENT - DISCONNECTING");
             socket.emit('disconnect')
             socket.off()
         }
@@ -41,11 +47,17 @@ const Chat = ({ location }) => {
 
     //For handling new messages received on backend
     useEffect(() => {
-        socket.on('message', (message) => {
+        socket.on('message', message => {
             //add new messages to array in state as received
-            setMessages([...messages, message])
+            console.log("CLIENT - ADDING NEW MESSAGE TO ARRAY");
+            setMessages(messages => [...messages, message])
         })
-    }, [messages])
+
+        socket.on("roomData", ({ users }) => {
+            console.log("Users: ", users);
+            setUsers(users);
+          });
+    }, [])
 
 
     //Send a message to the server
@@ -54,6 +66,7 @@ const Chat = ({ location }) => {
 
         if (message) {
             socket.emit('sendMessage', message, () => {
+                console.log("CLIENT - SENDING MESSAGE");
                 //Callback cleans message back to ''
                 setMessage('')
             })
