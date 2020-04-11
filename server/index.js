@@ -22,7 +22,12 @@ io.on('connection', (socket) => {
         const { err, user } = addUser({ id: socket.id, name, room })
 
         //Return the User is taken error to the callback to run on client
-        if (err) { return callback(err) }
+        if (err) return callback(err)
+
+        
+
+        //Send welcome message only to new user
+        socket.emit('message', { user: 'admin', text: `${user.name}, welcome to room ${user.room}.`});
 
         //Admin announces the user joining to the whole chat
         socket.broadcast.to(user.room).emit('message', { user: 'Admin', text: `${user.name} has joined the room! :D` })
@@ -30,7 +35,7 @@ io.on('connection', (socket) => {
         //Add user to room
         socket.join(user.room)
 
-        //TODO: maybe move join to above the announcement?
+        io.to(user.room).emit('roomData', { room: user.room, users: getUsersInRoom(user.room) })
 
         callback()
     })
@@ -45,10 +50,17 @@ io.on('connection', (socket) => {
         //Do something on frontend once message is sent
         callback()
     })
-
+ 
     //when a connected user disconnects (closes client)
     socket.on('disconnect', () => {
         console.log("User just left!");
+
+        const user = removeUser(socket.id)
+        
+        if(user){
+            io.to(user.room).emit('message', { user: 'Admin', text: `he left` })
+            io.to(user.room).emit('roomData', { room: user.room, users: getUsersInRoom(user.room) })
+        }
     })
 })
 
@@ -57,3 +69,11 @@ app.use(router)
 server.listen(PORT, () => {
     console.log(`Server has started on port ${PORT}`);
 })
+
+
+
+// TODO:
+
+// Exponential function calls per additional message sent???
+// No signing out message broadcasting
+// singing in as same person twice
