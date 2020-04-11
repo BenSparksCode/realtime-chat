@@ -7,8 +7,6 @@ const addUser = ({ id, name, room }) => {
 
     const existingUser = users.find(user => user.room === room && user.name === name)
 
-    console.log(existingUser);
-
     if (existingUser) {
         return { error: 'Username is taken' }
     }
@@ -22,8 +20,6 @@ const addUser = ({ id, name, room }) => {
 const removeUser = (id) => {
 
     const index = users.findIndex(user => user.id === id)
-
-    console.log("Index to remove:", index);
 
     if (index !== -1) {
         return users.splice(index, 1)[0]
